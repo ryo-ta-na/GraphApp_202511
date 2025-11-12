@@ -1,2 +1,7 @@
-# Operating System Files
+# Operating System Files and Environment Files
 .DS_Store           # macOS folder metadata
+node_modules/        # Node.js module fileS
+
+# Internal Files
+internal/
+*secret*.yaml
