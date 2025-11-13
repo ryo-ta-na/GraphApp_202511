@@ -5,3 +5,4 @@ node_modules/        # Node.js module fileS
 # Internal Files
 internal/
 *secret*.yaml
+insertCities.js # include DB password
