@@ -1,0 +1,12 @@
+SQLs
+
+- The SQL for cities table in the insertCities.js
+
+CREATE TABLE monthly_avg_temp (
+  city_id BIGINT NOT NULL,
+  year INT NOT NULL,
+  month INT NOT NULL,
+  average_temp FLOAT,
+  PRIMARY KEY (city_id, year, month),
+  FOREIGN KEY (city_id) REFERENCES cities(id)
+);

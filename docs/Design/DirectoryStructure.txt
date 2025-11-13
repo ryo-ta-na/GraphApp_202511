@@ -1,0 +1,31 @@
+graphapp/
+│
+├── backend/
+│   ├── server.js
+│   ├── package.json
+│   ├── package-lock.json
+│   ├── Dockerfile
+│
+├── frontend/
+│   ├── src
+│       ├── App.js
+│       └── index.js
+│   ├── public/index.html
+│   ├── package.json
+│   ├── package-lock.json
+│   ├── Dockerfile
+│
+├── k8s/
+│   ├── namespace.yaml
+│   ├── db-secret.yaml
+│   ├── backend-deployment.yaml
+│   ├── frontend-deployment.yaml
+│   ├── services.yaml
+│
+├── scripts/
+│   ├── build_images.sh
+│   ├── deploy_local.sh
+│   ├── delete_all.sh
+│
+├── .gitignore
+└── README.md   ← optional
