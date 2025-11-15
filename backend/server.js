@@ -5,6 +5,12 @@ const mysql = require('mysql2/promise');
 const app = express();
 app.use(express.json());
 
+const cors = require('cors');
+// app.use(cors({
+//   origin: 'http://localhost:3000'
+// }));
+app.use(cors());
+
 const {
   MYSQL_HOST,
   MYSQL_USER,
@@ -51,13 +57,13 @@ async function getCityIdByName(cityName) {
 // }
 
 // Upsert monthly average
-async function upsertMonthlyTemp(city, year, month, avgTemp) {
+async function upsertMonthlyTemp(city_id, year, month, avgTemp) {
   const sql = `
-    INSERT INTO monthly_avg_temp (city, year, month, average_temp)
+    INSERT INTO monthly_avg_temp (city_id, year, month, average_temp)
     VALUES (?, ?, ?, ?)
     ON DUPLICATE KEY UPDATE average_temp = VALUES(average_temp)
   `;
-  await pool.execute(sql, [city, year, month, avgTemp]);
+  await pool.execute(sql, [city_id, year, month, avgTemp]);
 }
 
 // API endpoint
@@ -93,14 +99,14 @@ app.get('/api/monthly/:city/:year', async (req, res) => {
       const meanTempKelvin = response.data.result.temp.mean;
       const meanTempCelsius = meanTempKelvin - 273.15;
 
-      await upsertMonthlyTemp(city, year, month, meanTempCelsius);
+      await upsertMonthlyTemp(cityId, year, month, meanTempCelsius);
     }
 
     const [rows] = await pool.query(
     //   'SELECT month, average_temp FROM monthly_avg_temp WHERE city = ? AND year = ? ORDER BY month ASC',
     //   [city, year]
-    'SELECT month, average_temp FROM monthly_avg_temp WHERE city = ? ORDER BY month ASC', // YEAR is not used
-      [city]
+    'SELECT month, average_temp FROM monthly_avg_temp WHERE city_id = ? ORDER BY month ASC', // YEAR is not used
+      [cityId]
     );
 
     res.json(rows);

@@ -10,13 +10,18 @@
 If any pod is not Running, check logs:
 > kubectl logs -n graphapp <pod-name>
 
+Start portforwarding to access the frontend service from web browsers
+> kubectl port-forward service/frontend 3000:3000 -n graphapp
+
+Start portforwarding to access the backtend service from the frontend webpage dislayed on web browsers
+> kubectl port-forward service/backend 8080:8080 -n graphapp
+
+(Optional) — Check backend logs
+> kubectl logs -n graphapp deployment/backend # show logs
+> kubectl logs -f -n graphapp deployment/backend # show logs continuously
+
 ## STEP 4 — Access the frontend in your browser
-> open http://localhost:30000
+> open http://localhost:3000
 
 ## STEP 5 — Tear everything down (if needed)
 > bash scripts/delete_all.sh
-
-## (Optional) — Check backend logs
-> kubectl logs -n graphapp deployment/backend
-> kubectl logs -f -n graphapp deployment/backend
-

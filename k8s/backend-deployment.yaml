@@ -30,9 +30,9 @@ metadata:
 spec:
   selector:
     app: backend
-  type: NodePort
+  # type: NodePort
+  type: ClusterIP
   ports:
     - port: 8080
       targetPort: 8080
-      nodePort: 30081
-  # type: ClusterIP
+      # nodePort: 30081

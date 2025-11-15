@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Line } from 'react-chartjs-2';
 import 'chart.js/auto';
 
-const API = process.env.REACT_APP_API_BASE || 'http://localhost:30081';
+const API = process.env.REACT_APP_API_BASE || 'http://localhost:8080';
 
 export default function App() {
   const [city, setCity] = useState('Tokyo');
@@ -10,9 +10,11 @@ export default function App() {
   const [data, setData] = useState([]);
 
   const loadData = async () => {
+    console.log("loadData called")
     try {
       const res = await fetch(`${API}/api/monthly/${encodeURIComponent(city)}/${year}`);
       const json = await res.json();
+      console.log(json)
       setData(json);
     } catch (e) {
       console.error(e);
@@ -22,7 +24,7 @@ export default function App() {
 
   useEffect(() => {
     loadData();
-  }, [city, year]);
+  }, []);
 
   const chartData = {
     labels: data.map(d => `Month ${d.month}`),
