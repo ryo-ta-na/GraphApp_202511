@@ -11,6 +11,8 @@ const cors = require('cors');
 // }));
 app.use(cors());
 
+const API_OPENWEATHER_HISTORY = process.env.OPENWEATHER_HISTORY_API_BASE;
+
 const {
   MYSQL_HOST,
   MYSQL_USER,
@@ -71,6 +73,7 @@ app.get('/api/monthly/:city/:year', async (req, res) => {
   const city = req.params.city;
 //   const year = parseInt(req.params.year, 10);
   var year = new Date().getFullYear();
+  const currentYear = year;
 
   const currentMonth = new Date().getMonth() + 1; // 0-11 -> 1-12
 
@@ -78,15 +81,26 @@ app.get('/api/monthly/:city/:year', async (req, res) => {
     // get city id
     let cityId = await getCityIdByName(city);
 
-    // if (!cityId) {
-    //   // Optional: Create record if not exists (or you can just return 404)
-    //   console.log(`City ${cityName} not found, creating record...`);
-    //   cityId = await ensureCityExists(cityName);
-    // }
+    if (!cityId) {
+      // Optional: Create record if not exists (or you can just return 404)
+      // console.log(`City ${cityName} not found, creating record...`);
+      // cityId = await ensureCityExists(cityName);
+      return res.status(400).json({ error: "No data on the specified city" });
+    }
 
+    // if the data is already stored in the database, return the data
+    const [rows_pre] = await pool.query(
+    'SELECT year, month, average_temp FROM monthly_avg_temp WHERE city_id = ? ORDER BY year ASC, month ASC',
+      [cityId]
+    );
+    if (rows_pre.length >= 12) {
+      return res.json(rows_pre);
+    }
+
+    // fetch data for 12 months each and insert received data into the database
     for (let month = 1; month <= 12; month++) {
-      if (month >= currentMonth) {year -= 1;} // last year's data
-      const response = await axios.get('https://history.openweathermap.org/data/2.5/aggregated/month', {
+      if (month >= currentMonth) {year = currentYear - 1;} // last year's data
+      const response = await axios.get(`${API_OPENWEATHER_HISTORY}/aggregated/month`, {
         params: {
         //   city_id: city, // or q: city // use id
           id: cityId,
@@ -102,13 +116,13 @@ app.get('/api/monthly/:city/:year', async (req, res) => {
       await upsertMonthlyTemp(cityId, year, month, meanTempCelsius);
     }
 
+    // retrieve data from the database
     const [rows] = await pool.query(
-    //   'SELECT month, average_temp FROM monthly_avg_temp WHERE city = ? AND year = ? ORDER BY month ASC',
-    //   [city, year]
-    'SELECT month, average_temp FROM monthly_avg_temp WHERE city_id = ? ORDER BY month ASC', // YEAR is not used
+    'SELECT year, month, average_temp FROM monthly_avg_temp WHERE city_id = ? ORDER BY year ASC, month ASC',
       [cityId]
     );
 
+    // return
     res.json(rows);
   } catch (err) {
     console.error(err);

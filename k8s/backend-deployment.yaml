@@ -18,6 +18,9 @@ spec:
           image: graphapp-backend:local
           ports:
             - containerPort: 8080
+          env:
+            - name: OPENWEATHER_HISTORY_API_BASE
+              value: "https://history.openweathermap.org/data/2.5"
           envFrom:
             - secretRef:
                 name: db-secret
