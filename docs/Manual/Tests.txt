@@ -1,0 +1,12 @@
+# Auto-Scaling test
+### Preparation
+(When pods are running, networking is configured, Metrics API is installed, and hpa is applied)
+> kubectl get hpa frontend-hpa --watch # frontend
+> kubectl get hpa frontend-hpa --watch # backend
+
+### test
+> for i in `seq 100000`; do curl -L http://localhost:3000; done # frontend
+> for i in `seq 100000`; do curl -L http://localhost:8080/api/monthly/Japan/2025; done # backend
+
+### check metrics
+> kubectl top pods -n graphapp # check the %cpu

@@ -6,6 +6,8 @@
    Kubernetes: v1.34.1
    Credential Helper: v0.9.4
 
+ - Install Metrics Server (commands in k8s/install-metrics-api.sh)
+
 ## STEP 1 — Build Docker images locally
 > bash scripts/build_images.sh
 
@@ -19,10 +21,10 @@ If any pod is not Running, check logs:
 > kubectl logs -n graphapp <pod-name>
 
 Start portforwarding to access the frontend service from web browsers
-> kubectl port-forward service/frontend 3000:3000 -n graphapp
+> kubectl port-forward service/frontend-service 3000:3000 -n graphapp
 
 Start portforwarding to access the backtend service from the frontend webpage dislayed on web browsers
-> kubectl port-forward service/backend 8080:8080 -n graphapp
+> kubectl port-forward service/backend-service 8080:8080 -n graphapp
 
 (Optional) — Check backend logs
 > kubectl logs -n graphapp deployment/backend # show logs

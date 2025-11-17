@@ -1,23 +1,28 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: frontend
+  name: frontend-deployment
   namespace: graphapp
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: frontend
+      app: frontend-app
   template:
     metadata:
       labels:
-        app: frontend
+        app: frontend-app
     spec:
       containers:
-        - name: frontend
-          image: graphapp-frontend:local
+        - name: frontend-app
+          image: graphapp-frontend-image:local
           ports:
             - containerPort: 3000
+          resources:
+            requests:
+              cpu: "50m"
+            limits:
+              cpu: "100m"
           env:
             - name: REACT_APP_API_BASE
               # value: "http://backend.graphapp.svc.cluster.local:8080"
@@ -27,11 +32,11 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: frontend
+  name: frontend-service
   namespace: graphapp
 spec:
   selector:
-    app: frontend
+    app: frontend-app
   # type: NodePort
   type: ClusterIP
   ports:
