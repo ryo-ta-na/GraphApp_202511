@@ -15,9 +15,9 @@ spec:
     spec:
       containers:
         - name: frontend-app
-          image: graphapp-frontend-image:local
+          image: graphapp-ingress-frontend-image:local
           ports:
-            - containerPort: 3000
+            - containerPort: 80
           resources:
             requests:
               cpu: "50m"
@@ -25,9 +25,7 @@ spec:
               cpu: "100m"
           env:
             - name: REACT_APP_API_BASE
-              # value: "http://backend.graphapp.svc.cluster.local:8080"
-              # value: "http://localhost:30081"
-              value: "http://localhost:8080"
+              value: "/api"
 ---
 apiVersion: v1
 kind: Service
@@ -41,5 +39,4 @@ spec:
   type: ClusterIP
   ports:
     - port: 3000
-      # nodePort: 30000
-      targetPort: 3000
+      targetPort: 80
