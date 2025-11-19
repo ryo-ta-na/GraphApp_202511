@@ -1,4 +1,5 @@
 ## Prerequisites
+ - MySQL 8.2.0
  - node 22.19.0
  - Docker-Desktop
    Engine: 28.5.1
@@ -6,7 +7,11 @@
    Kubernetes: v1.34.1
    Credential Helper: v0.9.4
 
+ - A Kubernetes cluster is already running
  - Install Metrics Server (commands in k8s/install-metrics-api.sh)
+ - Install Ingress
+   (Check the latest commands here: https://kubernetes.github.io/ingress-nginx/deploy/#quick-start)
+   > kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.14.0/deploy/static/provider/cloud/deploy.yaml
 
 ## STEP 1 — Build Docker images locally
 > bash scripts/build_images.sh
@@ -16,22 +21,21 @@
 
 ## STEP 3 — Verify that everything is running
 > kubectl get pods -n graphapp
+> kubectl get service -n graphapp
+> kubectl get ingress -n graphapp # check CLASS is nginx and ADDRESS is allocated
 
 If any pod is not Running, check logs:
 > kubectl logs -n graphapp <pod-name>
 
-Start portforwarding to access the frontend service from web browsers
-> kubectl port-forward service/frontend-service 3000:3000 -n graphapp
+Start portforwarding to access the Ingress from web browsers
+> kubectl port-forward --namespace=ingress-nginx service/ingress-nginx-controller 8080:80
 
-Start portforwarding to access the backtend service from the frontend webpage dislayed on web browsers
-> kubectl port-forward service/backend-service 8080:8080 -n graphapp
-
-(Optional) — Check backend logs
-> kubectl logs -n graphapp deployment/backend # show logs
-> kubectl logs -f -n graphapp deployment/backend # show logs continuously
+(Optional) — Check frontend and backend logs (-f show logs continuously)
+> kubectl logs -f -n graphapp deployment/frontend-deployment # frontend
+> kubectl logs -f -n graphapp deployment/backend-deployment # backend
 
 ## STEP 4 — Access the frontend in your browser
-> open http://localhost:3000
+> open http://graphapp.local:8080
 
 ## STEP 5 — Tear everything down (if needed)
 > bash scripts/delete_all.sh
