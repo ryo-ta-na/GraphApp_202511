@@ -1,6 +1,6 @@
 # Temperature History Dashboard
 
-A containerized full-stack web application that displays the **past 12 months of temperature data** using a **React.js frontend**, **Express.js backend**, and **MySQL database**.
+A containerized full-stack web application that displays the **previous 12 months of temperature data** provided by the OpenWeather API using a **React.js frontend**, **Express.js backend**, and **MySQL database**.
 The entire stack runs on **Kubernetes** (via Docker Desktop) with portforwarding (both fronend and backend).
 
 ---
@@ -15,6 +15,7 @@ The entire stack runs on **Kubernetes** (via Docker Desktop) with portforwarding
 - Kubernetes manifests for:
   - Frontend Deployment + Service (Service not used in this architecture)
   - Backend Deployment + Service (Service not used in this architecture)
+  - MySQL Deployment + Persistent Volume
 
 ---
 
@@ -31,7 +32,7 @@ Portforward (Backend)
 |  ||
 -(Kubernetes Cluster)-
 |  ||
-|  React App container
+|  React App container (Frontend)
 |
 Express container (Backend)
 |  |
@@ -59,5 +60,27 @@ MySQL (Local Mac)
 
 ## Screen Shots
 
+(The input of year is currently not used.)
 ![App Screenshot](docs/Design/screenShots/Temperature_Kyoto_20251119.png)
 ![App Screenshot](docs/Design/screenShots/Temperature_Dummy_20251119.png)
+
+---
+
+## Notes
+
+- You need your own OpenWeather API key.
+- The db-secret.yaml used at the backend is not tracked in this repository, so it need to be created under the k8s directory. The following is the template of db-secret.yaml.
+```
+apiVersion: v1
+kind: Secret
+metadata:
+  name: db-secret
+  namespace: graphapp
+type: Opaque
+stringData:
+  MYSQL_HOST: "host.docker.internal"
+  MYSQL_USER: ""
+  MYSQL_PASSWORD: ""
+  MYSQL_DB: ""
+  OPENWEATHER_KEY: ""
+  ```
