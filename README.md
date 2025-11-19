@@ -19,7 +19,7 @@ The entire stack runs on **Kubernetes** (via Docker Desktop) with portforwarding
 ---
 
 ## Architecture Overview
-
+```
 ||: Frontend traffic
 |: Backend traffic
 
@@ -40,7 +40,7 @@ Express container (Backend)
 |  OpenWeather API
 |
 MySQL (Local Mac)
-
+```
 - React and Express run in separate containers
 - MySQL runs directly on macOS (not containerized)
 - Backend container directly accessed from the client web borwser
