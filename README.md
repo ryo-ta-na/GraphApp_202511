@@ -30,7 +30,11 @@ Portforward (Ingress)
 |
 Ingress controller
 |  |
+|  Frontend Service
+|  |
 |  React App container (Frontend)
+|
+Backend Service
 |
 Express container (Backend)
 |  |
@@ -62,3 +66,24 @@ MySQL (Local Mac)
 (The input of year is currently not used.)
 ![App Screenshot](docs/Design/screenShots/Temperature_Kyoto_20251119.png)
 ![App Screenshot](docs/Design/screenShots/Temperature_Dummy_20251119.png)
+
+---
+
+## Notes
+
+- You need your own OpenWeather API key.
+- The db-secret.yaml used at the backend is not tracked in this repository, so it need to be created under the k8s directory. The following is the template of db-secret.yaml.
+```
+apiVersion: v1
+kind: Secret
+metadata:
+  name: db-secret
+  namespace: graphapp
+type: Opaque
+stringData:
+  MYSQL_HOST: "host.docker.internal"
+  MYSQL_USER: ""
+  MYSQL_PASSWORD: ""
+  MYSQL_DB: ""
+  OPENWEATHER_KEY: ""
+  ```
