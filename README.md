@@ -1,6 +1,6 @@
 # Temperature History Dashboard
 
-A containerized full-stack web application that displays the **past 12 months of temperature data** using a **React.js frontend**, **Express.js backend**, and **MySQL database**.  
+A containerized full-stack web application that displays the **past 12 months of temperature data** using a **React.js frontend**, **Express.js backend**, and **MySQL database**.
 The entire stack runs on **Kubernetes** (via Docker Desktop) with portforwarding (both fronend and backend).
 
 ---
