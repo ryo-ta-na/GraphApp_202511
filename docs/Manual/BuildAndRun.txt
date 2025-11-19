@@ -1,4 +1,5 @@
 ## Prerequisites
+ - MySQL 8.2.0
  - node 22.19.0
  - Docker-Desktop
    Engine: 28.5.1
@@ -6,6 +7,7 @@
    Kubernetes: v1.34.1
    Credential Helper: v0.9.4
 
+ - A Kubernetes cluster is already running
  - Install Metrics Server (commands in k8s/install-metrics-api.sh)
  - Install Ingress
    (Check the latest commands here: https://kubernetes.github.io/ingress-nginx/deploy/#quick-start)
