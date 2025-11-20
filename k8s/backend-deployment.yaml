@@ -24,8 +24,10 @@ spec:
             limits:
               cpu: "200m"
           envFrom:
+            - configMapRef:
+                name: app-config
             - secretRef:
-                name: db-secret
+                name: app-secret
           env:
             - name: OPENWEATHER_HISTORY_API_BASE
               value: "https://history.openweathermap.org/data/2.5"
