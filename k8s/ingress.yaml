@@ -27,21 +27,3 @@ spec:
             name: frontend-service
             port:
               number: 3000
-
-  - host: localhost     # ← This allows http://localhost to work
-    http:
-      paths:
-      - path: /api
-        pathType: Prefix
-        backend:
-          service:
-            name: backend-service
-            port:
-              number: 8080
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: frontend-service
-            port:
-              number: 3000

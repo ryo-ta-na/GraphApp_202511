@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: frontend-app
-          image: graphapp-ingress-frontend-image:local
+          image: 693938699452.dkr.ecr.ap-northeast-1.amazonaws.com/graphapp-eks-frontend:latest
           ports:
             - containerPort: 80
           resources:
