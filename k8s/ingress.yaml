@@ -3,11 +3,17 @@ kind: Ingress
 metadata:
   name: graphapp-ingress
   namespace: graphapp
+  annotations:
+    kubernetes.io/ingress.class: alb
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP":80}]'
+    alb.ingress.kubernetes.io/load-balancer-name: graphapp-alb
+
 spec:
-  ingressClassName: nginx
+  ingressClassName: alb
   rules:
-  - host: graphapp.local
-    http:
+  - http:
       paths:
 
       # Backend (Express)

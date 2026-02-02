@@ -24,7 +24,9 @@ The entire stack runs on **Kubernetes** (via Docker Desktop) with **Ingress** ro
 ```
 Client Web browser
 |
-Portforward (Ingress)
+-(AWS)-
+|
+AWS ALB  (public)
 |
 -(Kubernetes Cluster)-
 |
@@ -40,9 +42,12 @@ Express container (Backend)
 |  |
 -(Kubernetes Cluster)-
 |  |
-|  OpenWeather API
+|  MySQL (RDS)
 |
-MySQL (Local Mac)
+-(AWS)-
+|
+OpenWeather API
+
 ```
 - React and Express run in separate containers
 - MySQL runs directly on macOS (not containerized)
@@ -81,9 +86,6 @@ metadata:
   namespace: graphapp
 type: Opaque
 stringData:
-  MYSQL_HOST: "host.docker.internal"
-  MYSQL_USER: ""
   MYSQL_PASSWORD: ""
-  MYSQL_DB: ""
   OPENWEATHER_KEY: ""
   ```
