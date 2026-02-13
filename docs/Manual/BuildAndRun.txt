@@ -34,6 +34,10 @@ Laptop
 ## STEP 3 - Create EKS Cluster
  - Create cluster
 ```
+# Check current AWS accoount & IAM user
+aws sts get-caller-identity
+
+# Create an EKS cluster
 eksctl create cluster \
   --name graphapp-eks-cluster \
   --region ap-northeast-1 \
@@ -46,6 +50,7 @@ kubectl get nodes
 ```
 
 ## STEP 4 - Prepare Container Images
+You can skip STEP 4 if ECR private repositories for frontend and backend already exist.
 ```
 # Create Images (If not already created)
 bash scripts/build_images.sh
@@ -71,14 +76,14 @@ docker push <ACCOUNT_ID>.dkr.ecr.<REGION>.amazonaws.com/my-backend:latest
  - Update image references in your yaml files such that they point to your ECR images
  - Apply manifests
 ```
-kubectl apply -f k8s/namespace.yaml
-kubectl apply -f k8s/
+kubectl apply -f k8s/initials/namespace/
+kubectl apply -f k8s/initials/
 ```
 
 ## STEP 6 Configure Ingress / ALB
-Your Ingress will now automatically create an ALB endpoint.
+Your Ingress controller will create an ALB endpoint.
 ```
-# Install CRDs
+# Install the CRD of ALB (TargetGroupBinding: A Kubernetes Object is created that represents ALB instances)
 kubectl apply -k github.com/aws/eks-charts/stable/aws-load-balancer-controller/crds?ref=master
 
 # Add Helm repo
@@ -93,36 +98,41 @@ eksctl utils associate-iam-oidc-provider \
   --approve
 '''
 
-# Create IAM policy and service account
+# Create IAM policy and Service Account (replace ACCOUNT_ID)
 '''
-curl -O https://raw.githubusercontent.com/kubernetes-sigs/aws-load-balancer-controller/v2.6.1/docs/install/iam_policy.json
-aws iam create-policy \
-  --policy-name AWSLoadBalancerControllerIAMPolicy \
-  --policy-document file://iam_policy.json
-eksctl create iamserviceaccount \
-  --cluster graphapp-eks-cluster \
-  --namespace kube-system \
-  --name aws-load-balancer-controller \
-  --role-name AmazonEKSLoadBalancerControllerRole \
-  --attach-policy-arn arn:aws:iam::<ACCOUNT_ID>:policy/AWSLoadBalancerControllerIAMPolicy \
-  --approve
+  curl -O https://raw.githubusercontent.com/kubernetes-sigs/aws-load-balancer-controller/v2.6.1/docs/install/iam_policy.json
+  aws iam create-policy \
+    --policy-name AWSLoadBalancerControllerIAMPolicy \
+    --policy-document file://iam_policy.json
+  eksctl create iamserviceaccount \
+    --cluster graphapp-eks-cluster \
+    --namespace kube-system \
+    --name aws-load-balancer-controller \
+    --role-name AmazonEKSLoadBalancerControllerRole \
+    --attach-policy-arn arn:aws:iam::<ACCOUNT_ID>:policy/AWSLoadBalancerControllerIAMPolicy \
+    --approve
 
-# Install controller (replace VPC ID)
+# Install controller (replace VPC ID) (ALB will immediately be created)
 helm install aws-load-balancer-controller eks/aws-load-balancer-controller \
   --set clusterName=graphapp-eks-cluster \
   --set serviceAccount.create=false \
+  --set serviceAccount.name=aws-load-balancer-controller \
   --set region=ap-northeast-1 \
   --set vpcId=<VPC_ID> \
   -n kube-system
 
 # Restart the pod and apply ingress.yaml
 kubectl delete pod -n kube-system -l app.kubernetes.io/name=aws-load-balancer-controller
-kubectl apply -f ./k8s/ingress.yaml
+kubectl apply -f ./k8s/ingress/
 kubectl get ingress -n graphapp # ALB DNS name should appear
 ```
 
 ## STEP 7 Database Setup
  - Create small RDS instance (t3.micro/t3.small graph-api-db-rds-mysql)
+ - Allow inbound traffic from your working laptop's GIP* to port 3306 with Security Group
+   * curl https://checkip.amazonaws.com # Check your GIP
+     nc -zv <rds-endpoint> 3306 # Check connectivity
+     mysql -h <rds-endpoint> -u <user> -p # log in to your RDS instance
  - Export your local database:
 ```
 mysqldump -u graphapiuser -p GraphAPI > backup_graphapi.sql
@@ -133,7 +143,12 @@ mysql -h <rds-endpoint> -u <user> -p -e "CREATE DATABASE GraphAPI;"
 mysql -h <rds-endpoint> -u <user> -p GraphAPI < dbbackup.sql
 ```
 
-## STEP 8 Access Your App
+## STEP 8 Ensure all required Security Groups are created and attached
+ -ALB: Client GIP -> http, 80
+ -EKS Node: ALB SG -> http, 3000, ALB SG -> http, 8080
+ -RDS: as in STEP 7
+
+## STEP 9 Access Your App
 ```
 # Verify that everything is running
 kubectl get pods -n graphapp
@@ -153,7 +168,7 @@ kubectl get ingress -n graphapp
  - You’ll see ALB DNS endpoint
  - Open it in your browser → your frontend app is running in AWS
 
-## STEP 9 Cleanup to Save Costs
+## STEP 10 Cleanup to Save Costs
  - Delete EKS cluster
 ```
 eksctl delete cluster --name graphapp-eks-cluster --region ap-northeast-1
