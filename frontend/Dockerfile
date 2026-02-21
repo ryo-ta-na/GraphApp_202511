@@ -1,5 +1,7 @@
 # Build stage
 FROM node:18 AS builder
+ARG REACT_APP_API_BASE
+ENV REACT_APP_API_BASE=$REACT_APP_API_BASE
 WORKDIR /app
 
 COPY package*.json ./

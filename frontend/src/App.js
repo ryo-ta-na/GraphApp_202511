@@ -2,8 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { Line } from 'react-chartjs-2';
 import 'chart.js/auto';
 
-// const API_BACKEND = process.env.REACT_APP_API_BASE || 'http://localhost:8080';
-const API_BACKEND = window.RUNTIME_CONFIG?.API_BASE || 'http://localhost:8080';
+const API_BACKEND = process.env.REACT_APP_API_BASE || 'http://localhost:8080';
+// const API_BACKEND = window.RUNTIME_CONFIG?.API_BASE || 'http://localhost:8080';
 
 export default function App() {
   const [city, setCity] = useState('Japan');
