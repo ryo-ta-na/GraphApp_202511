@@ -25,12 +25,9 @@ spec:
               cpu: "200m"
           envFrom:
             - configMapRef:
-                name: app-config
+                name: backend-config
             - secretRef:
                 name: app-secret
-          env:
-            - name: OPENWEATHER_HISTORY_API_BASE
-              value: "https://history.openweathermap.org/data/2.5"
 ---
 apiVersion: v1
 kind: Service

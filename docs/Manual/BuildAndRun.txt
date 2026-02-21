@@ -3,7 +3,7 @@ Laptop
  - Docker-Desktop
    Engine: 28.5.1
    Compose: v2.40.3-desktop.1
-   Kubernetes: v1.34.1
+   Kubernetes: v1.34.1 -> 1.29
    Credential Helper: v0.9.4
 
 ## STEP 1 — Create an AWS IAM user for graphapp development
@@ -38,13 +38,9 @@ Laptop
 aws sts get-caller-identity
 
 # Create an EKS cluster
-eksctl create cluster \
-  --name graphapp-eks-cluster \
-  --region ap-northeast-1 \
-  --node-type t3.medium \
-  --nodes 2
+eksctl create cluster -f k8s/createCluster/cluster-config.yaml
 ```
- - Test cluster
+ - See if Nodes are created
 ```
 kubectl get nodes
 ```
@@ -83,14 +79,18 @@ kubectl apply -f k8s/initials/
 ## STEP 6 Configure Ingress / ALB
 Your Ingress controller will create an ALB endpoint.
 ```
-# Install the CRD of ALB (TargetGroupBinding: A Kubernetes Object is created that represents ALB instances)
-kubectl apply -k github.com/aws/eks-charts/stable/aws-load-balancer-controller/crds?ref=master
+# # Tag the subnets that k8s Worker Nodes belong to
+# kubernetes.io/cluster/graphapp-eks-cluster = shared
+# kubernetes.io/role/elb = 1 # if public subnets
+
+# # Install the CRD of ALB (TargetGroupBinding: A Kubernetes Object is created that represents ALB instances)
+# kubectl apply -k github.com/aws/eks-charts/stable/aws-load-balancer-controller/crds?ref=master
 
 # Add Helm repo
 helm repo add eks https://aws.github.io/eks-charts
 helm repo update
 
-# Enable OIDC provider
+# Enable OIDC provider (Without OIDC IRSA won't work: disabled by default)
 '''
 eksctl utils associate-iam-oidc-provider \
   --region ap-northeast-1 \
@@ -101,6 +101,7 @@ eksctl utils associate-iam-oidc-provider \
 # Create IAM policy and Service Account (replace ACCOUNT_ID)
 '''
   curl -O https://raw.githubusercontent.com/kubernetes-sigs/aws-load-balancer-controller/v2.6.1/docs/install/iam_policy.json
+  # curl -O https://raw.githubusercontent.com/kubernetes-sigs/aws-load-balancer-controller/v3.0.0/docs/install/iam_policy.json
   aws iam create-policy \
     --policy-name AWSLoadBalancerControllerIAMPolicy \
     --policy-document file://iam_policy.json
@@ -112,19 +113,26 @@ eksctl utils associate-iam-oidc-provider \
     --attach-policy-arn arn:aws:iam::<ACCOUNT_ID>:policy/AWSLoadBalancerControllerIAMPolicy \
     --approve
 
-# Install controller (replace VPC ID) (ALB will immediately be created)
+# Install controller (ALB will immediately be created)
 helm install aws-load-balancer-controller eks/aws-load-balancer-controller \
+  --version 1.6.1 \
   --set clusterName=graphapp-eks-cluster \
   --set serviceAccount.create=false \
   --set serviceAccount.name=aws-load-balancer-controller \
   --set region=ap-northeast-1 \
-  --set vpcId=<VPC_ID> \
   -n kube-system
 
-# Restart the pod and apply ingress.yaml
-kubectl delete pod -n kube-system -l app.kubernetes.io/name=aws-load-balancer-controller
+# Check the controller
+kubectl get pods -n kube-system
+kubectl logs -n kube-system \
+  -l app.kubernetes.io/name=aws-load-balancer-controller
+
+# Apply ingress.yaml
 kubectl apply -f ./k8s/ingress/
-kubectl get ingress -n graphapp # ALB DNS name should appear
+
+# Check the ingress
+kubectl get ingress -n graphapp　# ADDRESS of the created ALB should appear
+kubectl describe ingress graphapp-ingress -n graphapp
 ```
 
 ## STEP 7 Database Setup
@@ -144,8 +152,14 @@ mysql -h <rds-endpoint> -u <user> -p GraphAPI < dbbackup.sql
 ```
 
 ## STEP 8 Ensure all required Security Groups are created and attached
- -ALB: Client GIP -> http, 80
- -EKS Node: ALB SG -> http, 3000, ALB SG -> http, 8080
+ -To ensure these SG are created, add the following annotation to ingress.yaml
+  ALB: Client GIP -> http, 80
+  EKS Node (Pod): ALB SG -> http, 3000, ALB SG -> http, 8080
+  (Edit the client IP of sg-xxxxxxxxxxxxx (managed by controller) from 0.0.0.0/0 to your GIP)
+```
+alb.ingress.kubernetes.io/security-groups: "sg-xxxxxxxxxxxxx"
+alb.ingress.kubernetes.io/manage-backend-security-group-rules: "true"
+```
  -RDS: as in STEP 7
 
 ## STEP 9 Access Your App
