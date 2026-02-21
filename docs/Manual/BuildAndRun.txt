@@ -31,7 +31,24 @@ Laptop
    > tfenv install 1.9.8  # Install specific version
    > tfenv use 1.9.8  # Switch to that version
 
-## STEP 3 - Create EKS Cluster
+## STEP 3 - Prepare subnets and SGs
+ - Create a VPC
+ - Create subnets as specified in NW design
+ - Attach IGW
+ - Create NGW
+ - Create route tables for
+    - public subnet (subnet with 0.0.0.0/0 -> IGW) for ALB to allow internet access
+    - private subnet with 0.0.0.0/0 -> NGW for EKS worker nodes
+    - private subnet for EKS cluster node and DB
+ - Attach route tables
+ - Create SGs for 
+    - ALB: only allow inbound traffic from intended users
+           tag kubernetes.io/role/elb=1 to let EKS controller find public subnets automatically
+    - worker nodes: src SG that is used in the SG of RDS instance
+                    EKS creates another SG which will automatically be attached
+    - RDS: allow DB access (3306/tcp for MySQL) to the SG of worker nodes
+
+## STEP 4 - Create EKS Cluster
  - Create cluster
 ```
 # Check current AWS accoount & IAM user
@@ -45,7 +62,7 @@ eksctl create cluster -f k8s/createCluster/cluster-config.yaml
 kubectl get nodes
 ```
 
-## STEP 4 - Prepare Container Images
+## STEP 5 - Prepare Container Images
 You can skip STEP 4 if ECR private repositories for frontend and backend already exist.
 ```
 # Create Images (If not already created)
@@ -68,7 +85,7 @@ docker push <ACCOUNT_ID>.dkr.ecr.<REGION>.amazonaws.com/my-frontend:latest
 docker push <ACCOUNT_ID>.dkr.ecr.<REGION>.amazonaws.com/my-backend:latest
 ```
 
-## STEP 5 Deploy Your Kubernetes App
+## STEP 6 Deploy Your Kubernetes App
  - Update image references in your yaml files such that they point to your ECR images
  - Apply manifests
 ```
@@ -76,7 +93,7 @@ kubectl apply -f k8s/initials/namespace/
 kubectl apply -f k8s/initials/
 ```
 
-## STEP 6 Configure Ingress / ALB
+## STEP 7 Configure Ingress / ALB
 Your Ingress controller will create an ALB endpoint.
 ```
 # # Tag the subnets that k8s Worker Nodes belong to
@@ -135,8 +152,9 @@ kubectl get ingress -n graphapp　# ADDRESS of the created ALB should appear
 kubectl describe ingress graphapp-ingress -n graphapp
 ```
 
-## STEP 7 Database Setup
- - Create small RDS instance (t3.micro/t3.small graph-api-db-rds-mysql)
+## STEP 8 Database Setup
+ - If you have a snapshot, restore from it
+ - If you need to migrate youor local DB, first create small RDS instance (t3.micro/t3.small graph-api-db-rds-mysql)
  - Allow inbound traffic from your working laptop's GIP* to port 3306 with Security Group
    * curl https://checkip.amazonaws.com # Check your GIP
      nc -zv <rds-endpoint> 3306 # Check connectivity
@@ -151,7 +169,7 @@ mysql -h <rds-endpoint> -u <user> -p -e "CREATE DATABASE GraphAPI;"
 mysql -h <rds-endpoint> -u <user> -p GraphAPI < dbbackup.sql
 ```
 
-## STEP 8 Ensure all required Security Groups are created and attached
+## STEP 9 Ensure all required Security Groups are created and attached
  -To ensure these SG are created, add the following annotation to ingress.yaml
   ALB: Client GIP -> http, 80
   EKS Node (Pod): ALB SG -> http, 3000, ALB SG -> http, 8080
@@ -162,7 +180,7 @@ alb.ingress.kubernetes.io/manage-backend-security-group-rules: "true"
 ```
  -RDS: as in STEP 7
 
-## STEP 9 Access Your App
+## STEP 10 Access Your App
 ```
 # Verify that everything is running
 kubectl get pods -n graphapp
@@ -182,7 +200,7 @@ kubectl get ingress -n graphapp
  - You’ll see ALB DNS endpoint
  - Open it in your browser → your frontend app is running in AWS
 
-## STEP 10 Cleanup to Save Costs
+## STEP 11 Cleanup to Save Costs
  - Delete EKS cluster
 ```
 eksctl delete cluster --name graphapp-eks-cluster --region ap-northeast-1
