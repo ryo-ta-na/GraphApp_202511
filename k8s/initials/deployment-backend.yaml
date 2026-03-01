@@ -1,10 +1,10 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: backend-deployment
+  name: deployment-backend
   namespace: graphapp
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       app: backend-app

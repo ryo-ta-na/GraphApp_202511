@@ -13,5 +13,5 @@ data:
 
   # Database configuration (non-sensitive parts)
   # MYSQL_HOST: "graph-api-db-rds-mysql.ctgu2qas0mqm.ap-northeast-1.rds.amazonaws.com"
-  MYSQL_HOST: "graphapp-db-mysql-a01.ctgu2qas0mqm.ap-northeast-1.rds.amazonaws.com"
+  MYSQL_HOST: "graphapp-rds-mysql-a.ctgu2qas0mqm.ap-northeast-1.rds.amazonaws.com"
   MYSQL_DB: "GraphAPI"

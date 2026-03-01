@@ -1,6 +1,7 @@
 const express = require('express');
 const axios = require('axios');
 const mysql = require('mysql2/promise');
+const morgan = require("morgan");
 
 const app = express();
 app.use(express.json());
@@ -20,6 +21,9 @@ const {
   MYSQL_DB,
   OPENWEATHER_KEY
 } = process.env;
+
+// output access log to stdout in combined format
+app.use(morgan("combined"));
 
 // Validate environment
 ['MYSQL_HOST', 'MYSQL_USER', 'MYSQL_PASSWORD', 'MYSQL_DB', 'OPENWEATHER_KEY', 'OPENWEATHER_HISTORY_API_BASE'].forEach(key => {
@@ -69,7 +73,7 @@ async function upsertMonthlyTemp(city_id, year, month, avgTemp) {
 }
 
 // Health checks
-app.get('/api/health', (req, res) => {
+app.get('/health', (req, res) => {
   res.status(200).json({ status: 'healthy' });
 });
 

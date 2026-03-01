@@ -3,14 +3,18 @@ Laptop
  - Docker-Desktop
    Engine: 28.5.1
    Compose: v2.40.3-desktop.1
-   Kubernetes: v1.34.1 -> 1.29
+   Kubernetes: v1.34.1 -> 1.29 -> 1.32 -> 1.33
    Credential Helper: v0.9.4
 
-## STEP 1 — Create an AWS IAM user for graphapp development
+##########
+## STEP 1 — Create an AWS IAM user for graphapp development via root account's AWS management console
+##########
  - Jot down Access Key / Secret Key for CLI/eksctl
  - Attatch policies directly, AdministratorAccess, enable console access
 
+##########
 ## STEP 2 - Install CLI tools on your LapTop
+##########
  - Install AWS CLI
    > brew install awscli
    > aws configure # Enter the Access Key, Secret Key, default region (e.g., us-east-1), output format (json).
@@ -19,51 +23,56 @@ Laptop
  - Install eksctl
    > brew tap weaveworks/tap
    > brew install weaveworks/tap/eksctl
- - Install Helm (optional, for ALB controller)
+ - Install Helm (to install AWS LB controller on EKS)
    > brew install helm
  - Install Docker Desktop
-   > sudo brew install --cask docker
+   > brew install --cask docker
  - Install MySQL client (to access MySQL on AWS)
-   > brew install mysql-client@8.4 # couldn't log in when using mysql-client 9.5.0
+   > brew install mysql-client@8.4 # couldn't connect to MySQL (8.0.43) RDS instance when using mysql-client 9.5.0
  - Install Terraform
    > brew install tfenv
    > tfenv list-remote  # See all available versions
    > tfenv install 1.9.8  # Install specific version
    > tfenv use 1.9.8  # Switch to that version
 
+##########
 ## STEP 3 - Prepare subnets and SGs
+##########
  - Create a VPC
- - Create subnets as specified in NW design
- - Attach IGW
- - Create NGW
+ - Create subnets as specified in the NW design
+ - Attach IGW to your VPC
+ - Create NGWs in your public subnet
  - Create route tables for
     - public subnet (subnet with 0.0.0.0/0 -> IGW) for ALB to allow internet access
     - private subnet with 0.0.0.0/0 -> NGW for EKS worker nodes
-    - private subnet for EKS cluster node and DB
+    (EKS cluster node and DB only use default route table)
  - Attach route tables
- - Create SGs for 
+ - Create SGs for
     - ALB: only allow inbound traffic from intended users
            tag kubernetes.io/role/elb=1 to let EKS controller find public subnets automatically
     - worker nodes: src SG that is used in the SG of RDS instance
                     EKS creates another SG which will automatically be attached
     - RDS: allow DB access (3306/tcp for MySQL) to the SG of worker nodes
 
+##########
 ## STEP 4 - Create EKS Cluster
+##########
  - Create cluster
 ```
 # Check current AWS accoount & IAM user
 aws sts get-caller-identity
 
 # Create an EKS cluster
-eksctl create cluster -f k8s/createCluster/cluster-config.yaml
-```
- - See if Nodes are created
-```
+  eksctl create cluster -f k8s/createCluster/cluster-config.yaml
+
+# See if nodes are created
 kubectl get nodes
 ```
 
+##########
 ## STEP 5 - Prepare Container Images
-You can skip STEP 4 if ECR private repositories for frontend and backend already exist.
+##########
+You can skip if ECR private repositories for frontend and backend already exist.
 ```
 # Create Images (If not already created)
 bash scripts/build_images.sh
@@ -85,59 +94,83 @@ docker push <ACCOUNT_ID>.dkr.ecr.<REGION>.amazonaws.com/my-frontend:latest
 docker push <ACCOUNT_ID>.dkr.ecr.<REGION>.amazonaws.com/my-backend:latest
 ```
 
+##########
 ## STEP 6 Deploy Your Kubernetes App
+##########
  - Update image references in your yaml files such that they point to your ECR images
  - Apply manifests
 ```
 kubectl apply -f k8s/initials/namespace/
 kubectl apply -f k8s/initials/
+
+# Manually rollout if needed
+kubectl rollout restart deployment/deployment-frontend -n graphapp
+
+# Watch the rollout status
+kubectl rollout status deployment/deployment-frontend -n graphapp
 ```
 
-## STEP 7 Configure Ingress / ALB
-Your Ingress controller will create an ALB endpoint.
+##########
+## STEP 7 Configure Ingress / ALB / Node AutoScaler
+##########
+ -Your Ingress controller will create an ALB endpoint.
 ```
-# # Tag the subnets that k8s Worker Nodes belong to
-# kubernetes.io/cluster/graphapp-eks-cluster = shared
-# kubernetes.io/role/elb = 1 # if public subnets
-
 # # Install the CRD of ALB (TargetGroupBinding: A Kubernetes Object is created that represents ALB instances)
 # kubectl apply -k github.com/aws/eks-charts/stable/aws-load-balancer-controller/crds?ref=master
+# This is automatically done by EKS so coommented out
 
 # Add Helm repo
 helm repo add eks https://aws.github.io/eks-charts
 helm repo update
 
 # Enable OIDC provider (Without OIDC IRSA won't work: disabled by default)
-'''
 eksctl utils associate-iam-oidc-provider \
   --region ap-northeast-1 \
   --cluster graphapp-eks-cluster \
   --approve
-'''
 
-# Create IAM policy and Service Account (replace ACCOUNT_ID)
-'''
-  curl -O https://raw.githubusercontent.com/kubernetes-sigs/aws-load-balancer-controller/v2.6.1/docs/install/iam_policy.json
-  # curl -O https://raw.githubusercontent.com/kubernetes-sigs/aws-load-balancer-controller/v3.0.0/docs/install/iam_policy.json
-  aws iam create-policy \
-    --policy-name AWSLoadBalancerControllerIAMPolicy \
-    --policy-document file://iam_policy.json
-  eksctl create iamserviceaccount \
-    --cluster graphapp-eks-cluster \
-    --namespace kube-system \
-    --name aws-load-balancer-controller \
-    --role-name AmazonEKSLoadBalancerControllerRole \
-    --attach-policy-arn arn:aws:iam::<ACCOUNT_ID>:policy/AWSLoadBalancerControllerIAMPolicy \
-    --approve
+# Create IAM policy and Service Account for AWS LB controller (Replace ACCOUNT_ID)
+curl -o iam_policy_main_branch.json https://raw.githubusercontent.com/kubernetes-sigs/aws-load-balancer-controller/main/docs/install/iam_policy.json # main
+aws iam create-policy \
+  --policy-name AWSLoadBalancerControllerIAMPolicy \
+  --policy-document file://iam_policy_main_branch.json
+eksctl create iamserviceaccount \
+  --cluster graphapp-eks-cluster \
+  --namespace kube-system \
+  --name aws-load-balancer-controller \
+  --role-name AmazonEKSLoadBalancerControllerRole \
+  --attach-policy-arn arn:aws:iam::<ACCOUNT_ID>:policy/AWSLoadBalancerControllerIAMPolicy \
+  --approve
 
-# Install controller (ALB will immediately be created)
+# Create IAM policy and Service Account for Node AutoScaler (Replace ACCOUNT_ID)
+aws iam create-policy \
+  --policy-name AmazonEKSClusterAutoscalerPolicy \
+  --policy-document file://cluster-autoscaler-policy.json # Refer to Appendix (a)
+eksctl create iamserviceaccount \
+  --cluster graphapp-eks-cluster \
+  --namespace kube-system \
+  --name amazon-eks-cluster-autoscaler \
+  --role-name AmazonEKSClusterAutoscalerRole \
+  --attach-policy-arn arn:aws:iam::aws:policy/AmazonEKSClusterAutoscalerPolicy \
+  --approve
+
+# Tag ASG to enable auto-discovery mode
+aws autoscaling describe-auto-scaling-groups \
+  --query 'AutoScalingGroups[].AutoScalingGroupName' # display YOUR_REAL_ASG_NAME
+aws autoscaling create-or-update-tags --tags \
+  ResourceId=<YOUR_REAL_ASG_NAME>,ResourceType=auto-scaling-group,Key=k8s.io/cluster-autoscaler/enabled,Value=true,PropagateAtLaunch=true \
+  ResourceId=<YOUR_REAL_ASG_NAME>,ResourceType=auto-scaling-group,Key=k8s.io/cluster-autoscaler/graphapp-eks-cluster,Value=owned,PropagateAtLaunch=true
+
+# Install controller (ALB will immediately be created)　(Replace REGION)
 helm install aws-load-balancer-controller eks/aws-load-balancer-controller \
-  --version 1.6.1 \
+  --version 1.13.4 \
   --set clusterName=graphapp-eks-cluster \
   --set serviceAccount.create=false \
   --set serviceAccount.name=aws-load-balancer-controller \
-  --set region=ap-northeast-1 \
+  --set region=<REGION> \
   -n kube-system
+
+# Update the healthcheck URL for backend pod (/api/health)
 
 # Check the controller
 kubectl get pods -n kube-system
@@ -150,11 +183,46 @@ kubectl apply -f ./k8s/ingress/
 # Check the ingress
 kubectl get ingress -n graphapp　# ADDRESS of the created ALB should appear
 kubectl describe ingress graphapp-ingress -n graphapp
+
+# Check in which node pods are running (Replace NODE_NAME)
+kubectl get nodes
+kubectl get pods --all-namespaces --field-selector spec.nodeName=<NODE_NAME>
+
+# Update the API_BASE in the configmap-frontend.yaml (ALB endpoint)
+
+# Apply configmap_frontend.yaml
+kubectl apply -f ./k8s/initials/configmap_frontend.yaml
 ```
 
+ - Commands for debugging
+```
+# Commands to unstall ingress (Use when re-installing)
+kubectl delete -f k8s/ingress/ingress.yaml
+kubectl get ingress -n graphapp # check
+
+# Commands to unstall AWS LB controller (Use when re-installing)
+helm uninstall aws-load-balancer-controller -n kube-system
+kubectl get pods -n kube-system # check
+
+# Commands to unstall IRSA (Use when re-installing)
+eksctl delete iamserviceaccount \
+  --cluster graphapp-eks-cluster \
+  --namespace kube-system \
+  --name aws-load-balancer-controller \
+  --wait
+
+kubectl get sa aws-load-balancer-controller -n kube-system # check IRSA
+aws iam list-roles | grep AmazonEKSLoadBalancerControllerRole # check IAM role
+aws iam list-policies --scope Local | grep AWSLoadBalancerControllerIAMPolicy # check IAM policy
+```
+
+##########
 ## STEP 8 Database Setup
- - If you have a snapshot, restore from it
- - If you need to migrate youor local DB, first create small RDS instance (t3.micro/t3.small graph-api-db-rds-mysql)
+##########
+ - If you have a snapshot, restore from it (graphapp-rds-mysql-a)
+   and reset the Master password via AWS manage console using a password of your choice
+ - If you need to migrate youor local DB, first create RDS instance (t3.micro/t3.small graphapp-rds-mysql-a in my case)
+   and make it accessible from your local device (by making the RDS instancde public, etc.)
  - Allow inbound traffic from your working laptop's GIP* to port 3306 with Security Group
    * curl https://checkip.amazonaws.com # Check your GIP
      nc -zv <rds-endpoint> 3306 # Check connectivity
@@ -169,18 +237,19 @@ mysql -h <rds-endpoint> -u <user> -p -e "CREATE DATABASE GraphAPI;"
 mysql -h <rds-endpoint> -u <user> -p GraphAPI < dbbackup.sql
 ```
 
+##########
 ## STEP 9 Ensure all required Security Groups are created and attached
+##########
  -To ensure these SG are created, add the following annotation to ingress.yaml
-  ALB: Client GIP -> http, 80
-  EKS Node (Pod): ALB SG -> http, 3000, ALB SG -> http, 8080
-  (Edit the client IP of sg-xxxxxxxxxxxxx (managed by controller) from 0.0.0.0/0 to your GIP)
+  ALB: Client GIP -> 80/http (attached when via ingress.yaml)
+  EKS nodes 1: automatically attached by EKS
+  EKS nodes 2: the SG that wuold be source in the SG for RDS (no need to permit any inbound traffic) (attached via cluster-config.yaml)
+  RDS: EKS nodes 2 SG -> 3306/tcp (attached when creating RDS instance)
 ```
-alb.ingress.kubernetes.io/security-groups: "sg-xxxxxxxxxxxxx"
-alb.ingress.kubernetes.io/manage-backend-security-group-rules: "true"
-```
- -RDS: as in STEP 7
 
+##########
 ## STEP 10 Access Your App
+##########
 ```
 # Verify that everything is running
 kubectl get pods -n graphapp
@@ -188,8 +257,8 @@ kubectl get service -n graphapp
 kubectl get ingress -n graphapp # check CLASS is nginx and ADDRESS is allocated
 
 # (Optional) Check frontend and backend logs (-f show logs continuously)
-kubectl logs -f -n graphapp deployment/frontend-deployment # frontend
-kubectl logs -f -n graphapp deployment/backend-deployment # backend
+kubectl logs -f -n graphapp deployment/deployment-fronntend # frontend
+kubectl logs -f -n graphapp deployment/deployment-fronntend # backend
 
 # (Optional) Check Pods logs
 kubectl logs -n graphapp <pod-name>
@@ -200,11 +269,44 @@ kubectl get ingress -n graphapp
  - You’ll see ALB DNS endpoint
  - Open it in your browser → your frontend app is running in AWS
 
+##########
 ## STEP 11 Cleanup to Save Costs
+##########
  - Delete EKS cluster
 ```
+# Delete the entire EKS cluster
 eksctl delete cluster --name graphapp-eks-cluster --region ap-northeast-1
+
+# Delete worker nodes while preserving control plane
+eksctl delete nodegroup \
+  --cluster <your-cluster-name> \
+  --name <your-nodegroup-name> \
+  --region <region>
 ```
- - Delete CloudFormation Stack
+ - Delete CloudFormation Stack (if delete failed)
  - Delete ECR repositories
  - Delete VPC
+ - Delete NGNw and EIP
+
+##########
+## Appendix
+##########
+(a)cluster-autoscaler-policy.json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "autoscaling:DescribeAutoScalingGroups",
+        "autoscaling:DescribeAutoScalingInstances",
+        "autoscaling:DescribeLaunchConfigurations",
+        "autoscaling:DescribeTags",
+        "autoscaling:SetDesiredCapacity",
+        "autoscaling:TerminateInstanceInAutoScalingGroup",
+        "ec2:DescribeLaunchTemplateVersions"
+      ],
+      "Resource": "*"
+    }
+  ]
+}

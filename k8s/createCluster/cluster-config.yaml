@@ -4,7 +4,7 @@ kind: ClusterConfig
 metadata:
   name: graphapp-eks-cluster
   region: ap-northeast-1
-  version: "1.29"
+  version: "1.33"
 
 vpc:
   id: "vpc-037fe7166d5a49605"
@@ -22,7 +22,9 @@ vpc:
 
 managedNodeGroups:
   - name: private-nodes
-    instanceType: t3.medium
+    instanceType: t3.small
+    minSize: 2
+    maxSize: 5
     desiredCapacity: 2
     privateNetworking: true  # Nodes get private IPs only
     # Node subnets - our private app subnets

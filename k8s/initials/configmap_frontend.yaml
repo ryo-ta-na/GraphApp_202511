@@ -6,10 +6,10 @@ metadata:
 data:
   # Backend endpoinnt
   # REACT_APP_API_BASE: "http://graphapp-alb-738384121.ap-northeast-1.elb.amazonaws.com"
-  # config.js: |
-  #   window.RUNTIME_CONFIG = {
-  #     API_BASE: "http://graphapp-alb-303717343.ap-northeast-1.elb.amazonaws.com"
-  #   }
+  config.js: |
+    window.RUNTIME_CONFIG = {
+      API_BASE: "http://graphapp-alb-459164294.ap-northeast-1.elb.amazonaws.com"
+    }
 
   # App configuration
   APP_ENV: "production"
