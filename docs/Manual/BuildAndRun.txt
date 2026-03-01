@@ -161,7 +161,14 @@ aws autoscaling create-or-update-tags --tags \
   ResourceId=<YOUR_REAL_ASG_NAME>,ResourceType=auto-scaling-group,Key=k8s.io/cluster-autoscaler/enabled,Value=true,PropagateAtLaunch=true \
   ResourceId=<YOUR_REAL_ASG_NAME>,ResourceType=auto-scaling-group,Key=k8s.io/cluster-autoscaler/graphapp-eks-cluster,Value=owned,PropagateAtLaunch=true
 
-# Install controller (ALB will immediately be created)　(Replace REGION)
+# Install autoscaler
+kubectl apply -f k8s/initials/autoscaler/cluster-autoscaler-rbac.yaml
+kubectl apply -f k8s/initials/autoscaler/deployment-eks-autoscaler.yaml
+
+# Check the AutoScaler
+kubectl logs -n kube-system -l app=cluster-autoscaler
+
+# Install controller　(Replace REGION)
 helm install aws-load-balancer-controller eks/aws-load-balancer-controller \
   --version 1.13.4 \
   --set clusterName=graphapp-eks-cluster \
@@ -170,19 +177,22 @@ helm install aws-load-balancer-controller eks/aws-load-balancer-controller \
   --set region=<REGION> \
   -n kube-system
 
-# Update the healthcheck URL for backend pod (/api/health)
-
 # Check the controller
 kubectl get pods -n kube-system
 kubectl logs -n kube-system \
   -l app.kubernetes.io/name=aws-load-balancer-controller
 
-# Apply ingress.yaml
+# Apply ingress.yaml (ALB should immediately be created)
 kubectl apply -f ./k8s/ingress/
 
-# Check the ingress
+# Check the ingresskubectl get ingress -n graphapp
 kubectl get ingress -n graphapp　# ADDRESS of the created ALB should appear
 kubectl describe ingress graphapp-ingress -n graphapp
+
+# Check the healthcheck URL for frontend & backend pod (/health)
+# Restart frontend pods (Replace FRONTEND POD)
+kubectl get pods -n graphapp # display the name of frontend pods
+kubectl delete pod <FRONTEND POD> -n graphapp
 
 # Check in which node pods are running (Replace NODE_NAME)
 kubectl get nodes

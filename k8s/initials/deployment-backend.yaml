@@ -4,7 +4,7 @@ metadata:
   name: deployment-backend
   namespace: graphapp
 spec:
-  replicas: 2
+  replicas: 8
   selector:
     matchLabels:
       app: backend-app
