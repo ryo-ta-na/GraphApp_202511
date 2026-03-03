@@ -18,7 +18,7 @@ vpc:
     publicAccess: true   # Enable both endpoints as we discussed
     privateAccess: true  # This keeps node communication inside VPC
   publicAccessCidrs:
-    - "31.104.214.228/32"   # Replace with your office IP range (CIDR restriction)
+    - "81.155.54.12/32"   # Replace with your office IP range (CIDR restriction)
 
 managedNodeGroups:
   - name: private-nodes
