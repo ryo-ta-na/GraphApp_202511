@@ -39,3 +39,22 @@ managedNodeGroups:
     tags:
       # Required for node identification
       kubernetes.io/cluster/graphapp-eks-cluster: owned
+
+  - name: private-nodes2
+    instanceType: t3.small
+    minSize: 1
+    maxSize: 5
+    desiredCapacity: 1
+    privateNetworking: true  # Nodes get private IPs only
+    # Node subnets - our private app subnets
+    subnets:
+      - subnet-0b487f51b89ed85a0  # 192.168.13.0/24 (AZ-a)
+      - subnet-05e1fcd14e455deb9  # 192.168.14.0/24 (AZ-c)
+    # Security group rules for node communication
+    securityGroups:
+      attachIDs: ["sg-0f04632d7d1161e4d"]  # Your DB security group if needed
+    ssh:
+      allow: false  # Disable SSH for security
+    tags:
+      # Required for node identification
+      kubernetes.io/cluster/graphapp-eks-cluster: owned
