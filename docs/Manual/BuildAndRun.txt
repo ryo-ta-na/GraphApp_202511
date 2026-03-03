@@ -49,7 +49,8 @@ Laptop
  - Attach route tables
  - Create SGs for
     - ALB: only allow inbound traffic from intended users
-           tag kubernetes.io/role/elb=1 to let EKS controller find public subnets automatically
+           tag kubernetes.io/role/elb=1 and kubernetes.io/cluster/graphapp-eks-cluster=owned
+           to let EKS controller find public subnets automatically
     - worker nodes: src SG that is used in the SG of RDS instance
                     EKS creates another SG which will automatically be attached
     - RDS: allow DB access (3306/tcp for MySQL) to the SG of worker nodes

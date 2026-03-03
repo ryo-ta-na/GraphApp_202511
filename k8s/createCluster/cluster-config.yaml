@@ -7,18 +7,18 @@ metadata:
   version: "1.33"
 
 vpc:
-  id: "vpc-037fe7166d5a49605"
+  id: "vpc-01f1565660d66c385"
   subnets:
     # Cluster subnets (for X-ENI) - /28 each, dedicated for EKS control plane
     private:
-      ap-northeast-1a: { id: subnet-0e695d652ecd1529d }  # 192.168.240.0/28
-      ap-northeast-1c: { id: subnet-0a4b4936d7c4ff030 }  # 192.168.240.16/28
+      ap-northeast-1a: { id: subnet-09ab4d1cca2e5e233 }  # 192.168.240.0/28
+      ap-northeast-1c: { id: subnet-0155b553db6ff5a73 }  # 192.168.240.16/28
   # IMPORTANT: Do NOT specify public subnets here - only cluster subnets!
   clusterEndpoints:
     publicAccess: true   # Enable both endpoints as we discussed
     privateAccess: true  # This keeps node communication inside VPC
   publicAccessCidrs:
-    - "31.104.214.228/32"   # Replace with your office IP range (CIDR restriction)
+    - "81.155.54.12/32"   # Replace with your office IP range (CIDR restriction)
 
 managedNodeGroups:
   - name: private-nodes
@@ -29,11 +29,11 @@ managedNodeGroups:
     privateNetworking: true  # Nodes get private IPs only
     # Node subnets - our private app subnets
     subnets:
-      - subnet-04a3b4cb010569dec  # 192.168.3.0/24 (AZ-a)
-      - subnet-0dc5f0049f3c4da13  # 192.168.4.0/24 (AZ-c)
+      - subnet-03b0e52063b78e591  # 192.168.51.0/24 (AZ-a)
+      - subnet-038856e3a64b70600  # 192.168.52.0/24 (AZ-c)
     # Security group rules for node communication
     securityGroups:
-      attachIDs: ["sg-0f04632d7d1161e4d"]  # Your DB security group if needed
+      attachIDs: ["sg-047e8c9ee57467ed2"]  # Your DB security group if needed
     ssh:
       allow: false  # Disable SSH for security
     tags:
