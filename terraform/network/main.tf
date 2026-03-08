@@ -22,7 +22,7 @@ resource "aws_security_group" "tfgraphapp_sg_alb_internet_access" {
 
 resource "aws_vpc_security_group_ingress_rule" "tfgraphapp_ingress_rule_allow_access_from_laptop" {
   security_group_id = aws_security_group.tfgraphapp_sg_alb_internet_access.id
-  cidr_ipv4         = "86.171.43.254/32" # the GIP of local laptop
+  cidr_ipv4         = "81.155.54.12/32" # the GIP of local laptop
   ip_protocol       = "tcp"
   from_port         = 80
   to_port           = 80

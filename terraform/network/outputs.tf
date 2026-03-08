@@ -25,10 +25,10 @@ output "alb_sg_id" {
   value = aws_security_group.tfgraphapp_sg_alb_internet_access.id
 }
 
-# output "worker_sg_id" {
-#   value = aws_security_group.tfgraphapp_sg_worker_node_for_rds_access.id
-# }
-#
+output "worker_sg_id" {
+  value = aws_security_group.tfgraphapp_sg_worker_node_for_rds_access.id
+}
+
 # output "rds_sg_id" {
 #   value = aws_security_group.tfgraphapp_sg_rds_access_by_worker_node.id
 # }

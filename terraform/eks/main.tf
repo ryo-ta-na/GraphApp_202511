@@ -9,7 +9,7 @@ module "eks" {
 
   endpoint_public_access  = true
   endpoint_private_access = true
-  endpoint_public_access_cidrs   = ["86.171.43.254/32"] # the GIP of local laptop
+  endpoint_public_access_cidrs   = ["81.155.54.12/32"] # the GIP of local laptop
 
   subnet_ids              = data.terraform_remote_state.network.outputs.private_subnet_ids # worker node subnets
 
@@ -23,8 +23,13 @@ module "eks" {
       # ssh_allow        = false # If "remote_access = {}" is omitted, ssh is effectively disabled
       # node_security_group_id = data.terraform_remote_state.network.outputs.worker_sg_id
       associate_public_ip_address = false
+
+      vpc_security_group_ids = [
+      data.terraform_remote_state.network.outputs.worker_sg_id
+      ]
+
       tags = {
-        "kubernetes.io/cluster/graphapp-eks-cluster" = "owned"
+        "kubernetes.io/cluster/tfgraphapp-eks-cluster" = "owned"
       }
     }
   }
