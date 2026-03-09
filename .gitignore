@@ -6,3 +6,6 @@ node_modules/        # Node.js module fileS
 internal/
 *secret*.yaml
 insertCities.js # include DB password
+
+# Terraform files
+terraform/
