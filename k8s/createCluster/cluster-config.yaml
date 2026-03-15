@@ -7,7 +7,7 @@ metadata:
   version: "1.33"
 
 vpc:
-  id: "vpc-01f1565660d66c385"
+  id: "vpc-037fe7166d5a49605"
   subnets:
     # Cluster subnets (for X-ENI) - /28 each, dedicated for EKS control plane
     private:
