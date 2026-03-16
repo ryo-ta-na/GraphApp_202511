@@ -1,6 +1,0 @@
-# VPC id
-
-
-# kubeconfig info
-
-
