@@ -46,5 +46,5 @@ spec:
   # type: NodePort
   type: ClusterIP
   ports:
-    - port: 3000
+    - port: 80
       targetPort: 80
