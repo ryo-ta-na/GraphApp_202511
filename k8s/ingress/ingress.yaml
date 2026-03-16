@@ -9,7 +9,7 @@ metadata:
     alb.ingress.kubernetes.io/target-type: ip
     alb.ingress.kubernetes.io/listen-ports: '[{"HTTP":80}]'
     alb.ingress.kubernetes.io/load-balancer-name: graphapp-alb
-    alb.ingress.kubernetes.io/security-groups: sg-06d4f23148d132fcc # Only permit internet access from local laptops
+    alb.ingress.kubernetes.io/security-groups: sg-01de98060548a21ae # Only permit internet access from local laptops
     alb.ingress.kubernetes.io/manage-backend-security-group-rules: "true" # When you specify custom frontend security groups, the controller will NOT automatically add rules to the backend security group
     alb.ingress.kubernetes.io/healthcheck-path: /health
 

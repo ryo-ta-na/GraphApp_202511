@@ -49,10 +49,10 @@ Laptop
  - Attach route tables
  - Create SGs for
     - ALB: only allow inbound traffic from intended users
-           tag kubernetes.io/role/elb=1 and kubernetes.io/cluster/tfgraphapp-eks-cluster=owned
+           tag kubernetes.io/role/elb=1 and kubernetes.io/cluster/graphapp-eks-cluster=owned
            to let EKS controller find public subnets automatically
-    - worker nodes: src SG that is used in the SG of RDS instance
-                    EKS creates another SG which will automatically be attached
+    - worker nodes: as specified in the NW design xlsx
+    - control plane ENIs: as specified in the NW design xlsx
     - RDS: allow DB access (3306/tcp for MySQL) to the SG of worker nodes
 
 ##########
@@ -127,7 +127,7 @@ helm repo update
 # Enable OIDC provider (Without OIDC IRSA won't work: disabled by default)
 eksctl utils associate-iam-oidc-provider \
   --region ap-northeast-1 \
-  --cluster tfgraphapp-eks-cluster \
+  --cluster graphapp-eks-cluster \
   --approve
 
 # Create IAM policy and Service Account for AWS LB controller (Replace ACCOUNT_ID)
@@ -136,7 +136,7 @@ aws iam create-policy \
   --policy-name AWSLoadBalancerControllerIAMPolicy \
   --policy-document file://iam_policy_main_branch.json
 eksctl create iamserviceaccount \
-  --cluster tfgraphapp-eks-cluster \
+  --cluster graphapp-eks-cluster \
   --namespace kube-system \
   --name aws-load-balancer-controller \
   --role-name AmazonEKSLoadBalancerControllerRole \
@@ -148,7 +148,7 @@ aws iam create-policy \
   --policy-name AmazonEKSClusterAutoscalerPolicy \
   --policy-document file://cluster-autoscaler-policy.json # Refer to Appendix (a)
 eksctl create iamserviceaccount \
-  --cluster tfgraphapp-eks-cluster \
+  --cluster graphapp-eks-cluster \
   --namespace kube-system \
   --name amazon-eks-cluster-autoscaler \
   --role-name AmazonEKSClusterAutoscalerRole \
@@ -172,7 +172,7 @@ kubectl logs -n kube-system -l app=cluster-autoscaler
 # Install controller　(Replace REGION)
 helm install aws-load-balancer-controller eks/aws-load-balancer-controller \
   --version 1.13.4 \
-  --set clusterName=tfgraphapp-eks-cluster \
+  --set clusterName=graphapp-eks-cluster \
   --set serviceAccount.create=false \
   --set serviceAccount.name=aws-load-balancer-controller \
   --set region=<REGION> \
@@ -217,7 +217,7 @@ kubectl get pods -n kube-system # check
 
 # Commands to unstall IRSA (Use when re-installing)
 eksctl delete iamserviceaccount \
-  --cluster tfgraphapp-eks-cluster \
+  --cluster graphapp-eks-cluster \
   --namespace kube-system \
   --name aws-load-balancer-controller \
   --wait
@@ -286,7 +286,7 @@ kubectl get ingress -n graphapp
  - Delete EKS cluster
 ```
 # Delete the entire EKS cluster
-eksctl delete cluster --name tfgraphapp-eks-cluster --region ap-northeast-1
+eksctl delete cluster --name graphapp-eks-cluster --region ap-northeast-1
 
 # Delete worker nodes while preserving control plane
 eksctl delete nodegroup \
