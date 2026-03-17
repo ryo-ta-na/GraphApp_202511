@@ -8,8 +8,6 @@ metadata:
 
 vpc:
   id: "vpc-037fe7166d5a49605"
-  clusterSecurityGroup: sg-0a2b851ea51fbb429
-  sharedNodeSecurityGroup: sg-08ca2ce54aff5866e
   subnets:
     # Cluster subnets (for X-ENI) - /28 each, dedicated for EKS control plane
     private:
@@ -35,7 +33,7 @@ managedNodeGroups:
       - subnet-0dc5f0049f3c4da13  # 192.168.52.0/24 (AZ-c)
     # Security group rules for node communication
     securityGroups:
-      attachIDs: ["sg-0f04632d7d1161e4d"]  # Your DB security group if needed
+      attachIDs: ["sg-08ca2ce54aff5866e"]  # Your DB security group if needed
     ssh:
       allow: false  # Disable SSH for security
     tags:
