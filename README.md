@@ -72,7 +72,7 @@ MySQL (Local Mac)
 ## Notes
 
 - You need your own OpenWeather API key.
-- The db-secret.yaml used at the backend is not tracked in this repository, so it need to be created under the k8s directory. The following is the template of db-secret.yaml.
+- The db-secret.yaml used at the backend is not tracked in this repository. It needs to be created under the k8s directory. The following is the template for db-secret.yaml.
 ```
 apiVersion: v1
 kind: Secret
