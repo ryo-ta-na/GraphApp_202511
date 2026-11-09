@@ -4,7 +4,11 @@ A containerised web application that displays a line chart representing the mont
 Frontend stack is **React.js** and backend stack is **Express.js**.
 The frontend and backend runs on a **Kubernetes** containerised environment, with **Ingress** routing and **horizontal autoscaling** enabled.
 
+## Screen Shots
+(A line chart for a specified city)
 ![App Screenshot](docs/Design/screenShots/Temperature_Kyoto_20251119.png)
+
+(When the specified city is not supported)
 ![App Screenshot](docs/Design/screenShots/Temperature_Dummy_20251119.png)
 
 ---
