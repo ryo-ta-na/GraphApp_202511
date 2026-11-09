@@ -1,32 +1,32 @@
 # Temperature History Dashboard
 
-A containerized full-stack web application that displays the **previous 12 months of temperature data** using a **React.js frontend**, **Express.js backend**, and **MySQL database**.
-The entire stack runs on **Kubernetes** (via Docker Desktop) with **Ingress** routing.
+A containerised web application that displays a line chart representing the monthly average temperatures in the **past 12 months** for the specified city.
+Frontend stack is **React.js** and backend is **Express.js**.
+The frontend and backend runs on a **Kubernetes** containerised environment, with **Ingress** routing and **horizontal autoscaling** enabled.
 
 ---
 
 ## Features
 
-- Displays monthly temperature values for the previous 12 months
-- REST API served by Express.js
-- React.js frontend with dynamic charts
-- Persistent MySQL database running locally
-- Fully containerized with Docker
-- Kubernetes manifests for:
+- Displays monthly average temperatures in the past 12 months
+- Backend accesses OpenWeather API to retrieve temperature data
+- Frontend displays a line chart, using the data from backend
+- MySQL database stores cache 
+- MySQL database also stores the name of cities that are used in the queries to the OpenWeather API
+- Frontend and backend are containerised with Docker
+- Kubernetes manages the following
   - Frontend Deployment + Service
   - Backend Deployment + Service
-  - MySQL Deployment + Persistent Volume
+  - Horizontal autoscaling
   - Ingress routing
 
 ---
 
 ## Architecture Overview
 ```
-Client Web browser
+Client
 |
-Portforward (Ingress)
-|
--(Kubernetes Cluster)-
+==(Kubernetes Cluster)==
 |
 Ingress controller
 |  |
@@ -38,14 +38,13 @@ Backend Service
 |
 Express container (Backend)
 |  |
--(Kubernetes Cluster)-
+==(Kubernetes Cluster)==
 |  |
 |  OpenWeather API
 |
-MySQL (Local Mac)
+MySQL (RDS)
 ```
 - React and Express run in separate containers
-- MySQL runs directly on macOS (not containerized)
 - Kubernetes handles routing & load balancing
 
 ---
@@ -53,17 +52,16 @@ MySQL (Local Mac)
 ## Tech Stack
 
 - **Frontend:** React.js
-- **Backend:** Node.js + Express
-- **Database:** MySQL (local)
-- **Containerization:** Docker
-- **Orchestration:** Kubernetes (Docker Desktop)
-- **Ingress:** NGINX ingress controller
+- **Backend:** Express
+- **Database:** MySQL (RDS)
+- **Containerisation:** Docker
+- **Orchestration:** Kubernetes
 
 ---
 
 ## Screen Shots
 
-(The input of year is currently not used.)
+(The input for year is currently not used: It is fixed to the current year.)
 ![App Screenshot](docs/Design/screenShots/Temperature_Kyoto_20251119.png)
 ![App Screenshot](docs/Design/screenShots/Temperature_Dummy_20251119.png)
 
@@ -72,7 +70,7 @@ MySQL (Local Mac)
 ## Notes
 
 - You need your own OpenWeather API key.
-- The db-secret.yaml used at the backend is not tracked in this repository. It needs to be created under the k8s directory. The following is the template for db-secret.yaml.
+- The db-secret.yaml used at the backend is not tracked in this repository. It needs to be created under the k8s directory. The following is an example db-secret.yaml.
 ```
 apiVersion: v1
 kind: Secret
