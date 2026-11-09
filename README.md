@@ -4,7 +4,7 @@ A containerised web application that displays a line chart representing the mont
 Frontend stack is **React.js** and backend stack is **Express.js**.
 The frontend and backend runs on a **Kubernetes** containerised environment, with **Ingress** routing and **horizontal autoscaling** enabled.
 
-## Screen Shots
+## Screenshot
 (A line chart for a specified city)
 ![App Screenshot](docs/Design/screenShots/Temperature_Kyoto_20251119.png)
 
@@ -13,7 +13,7 @@ The frontend and backend runs on a **Kubernetes** containerised environment, wit
 
 ---
 
-## Features
+## Feature
 
 - Displays monthly average temperatures in the past 12 months
 - Backend accesses OpenWeather API to retrieve temperature data
@@ -74,7 +74,7 @@ MySQL (RDS)
 
 ---
 
-## Notes
+## Note
 
 - You need your own OpenWeather API key.
 - The db-secret.yaml used at the backend is not tracked in this repository. It needs to be created under the k8s directory. The following is a sample db-secret.yaml.
