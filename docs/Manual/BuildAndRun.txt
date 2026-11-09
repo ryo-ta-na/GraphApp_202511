@@ -65,6 +65,9 @@ aws sts get-caller-identity
 # Create an EKS cluster
   eksctl create cluster -f k8s/createCluster/cluster-config.yaml
 
+# Set context
+  eksctl create cluster -f k8s/createCluster/cluster-config.yaml
+
 # See if nodes are created
 kubectl get nodes
 ```
