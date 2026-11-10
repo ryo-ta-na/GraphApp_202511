@@ -1,8 +1,11 @@
 # Temperature History Dashboard
 
 A containerised web application that displays a line chart representing the monthly average temperatures in the **past 12 months** for the specified city.
+
 Frontend stack is **React.js** and backend stack is **Express.js**.
+
 The frontend and backend runs on a **Kubernetes** containerised environment, with **Ingress** routing and **horizontal autoscaling** enabled. **Terraform** creates VPC subnets and IAM roles.
+
 **GitHub Actions** builds and pushes Docker images to an AWS ECR repository when a new commit is pushed to GitHub.
 
 ## Screenshot
