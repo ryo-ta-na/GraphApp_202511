@@ -67,39 +67,36 @@ jobs:
       #     docker push \
       #       $REGISTRY/$ECR_REPOSITORY_BACKEND:$IMAGE_TAG
 
-      # 6. Configure kubectl for EKS
-      - name: Configure EKS access
-        run: |
-          aws eks update-kubeconfig \
-            --region $AWS_REGION \
-            --name $EKS_CLUSTER
+      # # 6. Configure kubectl for EKS
+      # - name: Configure EKS access
+      #   run: |
+      #     aws eks update-kubeconfig \
+      #       --region $AWS_REGION \
+      #       --name $EKS_CLUSTER
 
-      # - name: Verify AWS identity
-      #   run: aws sts get-caller-identity
+      # # 7. Restart Kubernetes deployments
+      # - name: Restart deployments
+      #   run: |
+      #     kubectl rollout restart \
+      #       deployment/$DEPLOYMENT_NAME_FRONTEND \
+      #       -n $K8S_NAMESPACE
 
-      # 7. Restart Kubernetes deployments
-      - name: Restart deployments
-        run: |
-          kubectl rollout restart \
-            deployment/$DEPLOYMENT_NAME_FRONTEND \
-            -n $K8S_NAMESPACE
+      #     kubectl rollout restart \
+      #       deployment/$DEPLOYMENT_NAME_BACKEND \
+      #       -n $K8S_NAMESPACE
 
-          kubectl rollout restart \
-            deployment/$DEPLOYMENT_NAME_BACKEND \
-            -n $K8S_NAMESPACE
+      # # 8. Verify frontend rollout
+      # - name: Verify frontend deployment
+      #   run: |
+      #     kubectl rollout status \
+      #       deployment/$DEPLOYMENT_NAME_FRONTEND \
+      #       -n $K8S_NAMESPACE \
+      #       --timeout=180s
 
-      # 8. Verify frontend rollout
-      - name: Verify frontend deployment
-        run: |
-          kubectl rollout status \
-            deployment/$DEPLOYMENT_NAME_FRONTEND \
-            -n $K8S_NAMESPACE \
-            --timeout=180s
-
-      # 9. Verify backend rollout
-      - name: Verify backend deployment
-        run: |
-          kubectl rollout status \
-            deployment/$DEPLOYMENT_NAME_BACKEND \
-            -n $K8S_NAMESPACE \
-            --timeout=180s
+      # # 9. Verify backend rollout
+      # - name: Verify backend deployment
+      #   run: |
+      #     kubectl rollout status \
+      #       deployment/$DEPLOYMENT_NAME_BACKEND \
+      #       -n $K8S_NAMESPACE \
+      #       --timeout=180s
