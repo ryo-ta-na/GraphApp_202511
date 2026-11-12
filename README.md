@@ -6,7 +6,9 @@ Frontend stack is **React.js** and backend stack is **Express.js**.
 
 The frontend and backend runs on a **Kubernetes** containerised environment, with **Ingress** routing and **horizontal autoscaling** enabled. **Terraform** creates VPC subnets and IAM roles.
 
-**GitHub Actions** builds and pushes Docker images to an AWS ECR repository when a new commit is pushed to GitHub.
+**GitHub Actions** builds and pushes Docker images to an AWS ECR repository when a new commit is pushed to GitHub (CI).
+
+**GitHub Actions** also rolls out pods to apply newly created Docker images (CD).
 
 ## Screenshot
 (A line chart for a specified city)
