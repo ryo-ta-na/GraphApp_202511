@@ -36,36 +36,36 @@ jobs:
           role-to-assume: arn:aws:iam::693938699452:role/GitHubAction-AssumeRoleWithAction-tfGraphApp-ECR
           aws-region: ${{ env.AWS_REGION }}
 
-      # 3. Login to ECR
-      - name: Login to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v2
+      # # 3. Login to ECR
+      # - name: Login to Amazon ECR
+      #   id: login-ecr
+      #   uses: aws-actions/amazon-ecr-login@v2
 
-      # 4. Build and push frontend Docker image
-      - name: Build and push frontend image
-        env:
-          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          IMAGE_TAG: latest
-        run: |
-          docker build \
-            -t $REGISTRY/$ECR_REPOSITORY_FRONTEND:$IMAGE_TAG \
-            ./frontend
+      # # 4. Build and push frontend Docker image
+      # - name: Build and push frontend image
+      #   env:
+      #     REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+      #     IMAGE_TAG: latest
+      #   run: |
+      #     docker build \
+      #       -t $REGISTRY/$ECR_REPOSITORY_FRONTEND:$IMAGE_TAG \
+      #       ./frontend
 
-          docker push \
-            $REGISTRY/$ECR_REPOSITORY_FRONTEND:$IMAGE_TAG
+      #     docker push \
+      #       $REGISTRY/$ECR_REPOSITORY_FRONTEND:$IMAGE_TAG
 
-      # 5. Build and push backend Docker image
-      - name: Build and push backend image
-        env:
-          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          IMAGE_TAG: latest
-        run: |
-          docker build \
-            -t $REGISTRY/$ECR_REPOSITORY_BACKEND:$IMAGE_TAG \
-            ./backend
+      # # 5. Build and push backend Docker image
+      # - name: Build and push backend image
+      #   env:
+      #     REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+      #     IMAGE_TAG: latest
+      #   run: |
+      #     docker build \
+      #       -t $REGISTRY/$ECR_REPOSITORY_BACKEND:$IMAGE_TAG \
+      #       ./backend
 
-          docker push \
-            $REGISTRY/$ECR_REPOSITORY_BACKEND:$IMAGE_TAG
+      #     docker push \
+      #       $REGISTRY/$ECR_REPOSITORY_BACKEND:$IMAGE_TAG
 
       # 6. Configure kubectl for EKS
       - name: Configure EKS access
@@ -74,8 +74,8 @@ jobs:
             --region $AWS_REGION \
             --name $EKS_CLUSTER
 
-      - name: Verify AWS identity
-        run: aws sts get-caller-identity
+      # - name: Verify AWS identity
+      #   run: aws sts get-caller-identity
 
       # 7. Restart Kubernetes deployments
       - name: Restart deployments
