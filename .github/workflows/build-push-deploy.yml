@@ -3,7 +3,7 @@ name: Build and push Docker images and Deploy to EKS
 on:
   push:
     branches:
-      - aws-eks-rds-terraform
+      - aws-eks-terraform-cicd
 
   workflow_dispatch:
 
