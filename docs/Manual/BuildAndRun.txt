@@ -55,6 +55,14 @@ Laptop
                     EKS creates another SG which will automatically be attached
     - RDS: allow DB access (3306/tcp for MySQL) to the SG of worker nodes
 
+If you prepared terraform source code, run the following commands.
+```
+cd {terraform project directory} # ./terraform/network/
+terraform init
+terraform plan
+terraform apply
+```
+
 ##########
 ## STEP 4 - Create EKS Cluster
 ##########
@@ -62,6 +70,10 @@ Laptop
 ```
 # Check current AWS accoount & IAM user
 aws sts get-caller-identity
+
+# Update k8s/createCluster/cluster-config.yaml
+# using subnet IDs you created in STEP 3
+# You can refer to the outputs of network module if you used terraform
 
 # Create an EKS cluster
   eksctl create cluster -f k8s/createCluster/cluster-config.yaml
@@ -186,7 +198,7 @@ kubectl logs -n kube-system \
 # Apply ingress.yaml (ALB should immediately be created)
 kubectl apply -f ./k8s/ingress/
 
-# Check the ingresskubectl get ingress -n graphapp
+# Check the ingress
 kubectl get ingress -n graphapp　# ADDRESS of the created ALB should appear
 kubectl describe ingress graphapp-ingress -n graphapp
 

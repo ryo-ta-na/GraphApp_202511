@@ -7,18 +7,19 @@ metadata:
   version: "1.33"
 
 vpc:
-  id: "vpc-01f1565660d66c385"
+  id: "vpc-0534e39bf1368e791"
   subnets:
     # Cluster subnets (for X-ENI) - /28 each, dedicated for EKS control plane
     private:
-      ap-northeast-1a: { id: subnet-09ab4d1cca2e5e233 }  # 192.168.240.0/28
-      ap-northeast-1c: { id: subnet-0155b553db6ff5a73 }  # 192.168.240.16/28
+      ap-northeast-1a: { id: subnet-02a2f0b08e1c9daa8 }  # 192.168.240.0/28
+      ap-northeast-1c: { id: subnet-0cefebdd380680d39 }  # 192.168.240.16/28
   # IMPORTANT: Do NOT specify public subnets here - only cluster subnets!
   clusterEndpoints:
-    publicAccess: true   # Enable both endpoints as we discussed
+    publicAccess: true   # Enable both public and private endpoints
     privateAccess: true  # This keeps node communication inside VPC
   publicAccessCidrs:
-    - "81.155.54.12/32"   # Replace with your office IP range (CIDR restriction)
+    - "213.78.43.46/32"   # Replace with your office IP range (CIDR restriction)
+                          # Run curl https://checkip.amazonaws.com
 
 managedNodeGroups:
   - name: private-nodes
@@ -29,11 +30,11 @@ managedNodeGroups:
     privateNetworking: true  # Nodes get private IPs only
     # Node subnets - our private app subnets
     subnets:
-      - subnet-03b0e52063b78e591  # 192.168.51.0/24 (AZ-a)
-      - subnet-038856e3a64b70600  # 192.168.52.0/24 (AZ-c)
+      - subnet-02bd146a1c23af911  # 192.168.51.0/24 (AZ-a)
+      - subnet-0fe49499138d07f4d  # 192.168.52.0/24 (AZ-c)
     # Security group rules for node communication
     securityGroups:
-      attachIDs: ["sg-047e8c9ee57467ed2"]  # Your DB security group if needed
+      attachIDs: ["sg-0a91e2a8ef3add1b1"]  # Your additional security group for worker nodes if needed
     ssh:
       allow: false  # Disable SSH for security
     tags:
