@@ -74,6 +74,9 @@ jobs:
             --region $AWS_REGION \
             --name $EKS_CLUSTER
 
+      - name: Verify AWS identity
+        run: aws sts get-caller-identity
+
       # 7. Restart Kubernetes deployments
       - name: Restart deployments
         run: |
