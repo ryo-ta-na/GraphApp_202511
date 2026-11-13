@@ -310,6 +310,7 @@ eksctl delete nodegroup \
  - Delete ECR repositories
  - Delete VPC
  - Delete NGNw and EIP
+ - terraform destroy
 
 ##########
 ## Appendix
