@@ -1,6 +1,7 @@
 const express = require('express');
 const axios = require('axios');
 const mysql = require('mysql2/promise');
+const morgan = require("morgan");
 
 const app = express();
 app.use(express.json());
@@ -11,7 +12,7 @@ const cors = require('cors');
 // }));
 app.use(cors());
 
-const API_OPENWEATHER_HISTORY = process.env.OPENWEATHER_HISTORY_API_BASE;
+const OPENWEATHER_HISTORY_API_BASE = process.env.OPENWEATHER_HISTORY_API_BASE;
 
 const {
   MYSQL_HOST,
@@ -21,8 +22,11 @@ const {
   OPENWEATHER_KEY
 } = process.env;
 
+// output access log to stdout in combined format
+app.use(morgan("combined"));
+
 // Validate environment
-['MYSQL_HOST', 'MYSQL_USER', 'MYSQL_PASSWORD', 'MYSQL_DB', 'OPENWEATHER_KEY'].forEach(key => {
+['MYSQL_HOST', 'MYSQL_USER', 'MYSQL_PASSWORD', 'MYSQL_DB', 'OPENWEATHER_KEY', 'OPENWEATHER_HISTORY_API_BASE'].forEach(key => {
   if (!process.env[key]) {
     console.error(`Missing env: ${key}`);
     process.exit(1);
@@ -68,6 +72,11 @@ async function upsertMonthlyTemp(city_id, year, month, avgTemp) {
   await pool.execute(sql, [city_id, year, month, avgTemp]);
 }
 
+// Health checks
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'healthy' });
+});
+
 // API endpoint
 app.get('/api/monthly/:city/:year', async (req, res) => {
   const city = req.params.city;
@@ -100,7 +109,7 @@ app.get('/api/monthly/:city/:year', async (req, res) => {
     // fetch data for 12 months each and insert received data into the database
     for (let month = 1; month <= 12; month++) {
       if (month >= currentMonth) {year = currentYear - 1;} // last year's data
-      const response = await axios.get(`${API_OPENWEATHER_HISTORY}/aggregated/month`, {
+      const response = await axios.get(`${OPENWEATHER_HISTORY_API_BASE}/aggregated/month`, {
         params: {
         //   city_id: city, // or q: city // use id
           id: cityId,

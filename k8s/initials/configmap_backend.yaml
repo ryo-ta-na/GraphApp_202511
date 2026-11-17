@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backend-config
+  namespace: graphapp
+data:
+  # API URLs (non-sensitive)
+  OPENWEATHER_HISTORY_API_BASE: "https://history.openweathermap.org/data/2.5"
+
+  # App configuration
+  APP_ENV: "production"
+  LOG_LEVEL: "INFO"
+
+  # Database configuration (non-sensitive parts)
+  # MYSQL_HOST: "graph-api-db-rds-mysql.ctgu2qas0mqm.ap-northeast-1.rds.amazonaws.com"
+  MYSQL_HOST: "graphapp-rds-mysql-a.ctgu2qas0mqm.ap-northeast-1.rds.amazonaws.com"
+  MYSQL_DB: "GraphAPI"

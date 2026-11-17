@@ -1,10 +1,10 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: frontend-deployment
+  name: deployment-frontend
   namespace: graphapp
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       app: frontend-app
@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: frontend-app
-          image: graphapp-ingress-frontend-image:local
+          image: 693938699452.dkr.ecr.ap-northeast-1.amazonaws.com/graphapp-eks-frontend:latest
           ports:
             - containerPort: 80
           resources:
@@ -23,9 +23,17 @@ spec:
               cpu: "50m"
             limits:
               cpu: "100m"
-          env:
-            - name: REACT_APP_API_BASE
-              value: "/api"
+          volumeMounts:
+            - name: config
+              mountPath: /usr/share/nginx/html/config.js
+              subPath: config.js
+          envFrom:
+            - configMapRef:
+                name: frontend-config
+      volumes:
+        - name: config
+          configMap:
+            name: frontend-config
 ---
 apiVersion: v1
 kind: Service

@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { Line } from 'react-chartjs-2';
 import 'chart.js/auto';
 
-const API_BACKEND = process.env.REACT_APP_API_BASE || 'http://localhost:8080';
+// const API_BACKEND = process.env.REACT_APP_API_BASE || 'http://localhost:8080';
+const API_BACKEND = window.RUNTIME_CONFIG?.API_BASE || 'http://localhost:8080';
 
 export default function App() {
   const [city, setCity] = useState('Japan');
@@ -79,7 +80,7 @@ export default function App() {
         <div style={{ textAlign: 'center', margin: '2rem 0' }}>
           <p>Loading data…</p>
           {/* Optional: add a logo or spinner */}
-          <img src="/loading-spinner.gif" alt="Loading..." width={50} />
+          <img src="/loading.gif" alt="Loading..." width={50} />
         </div>
       ) : (
         <Line data={chartData} />

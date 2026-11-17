@@ -1,0 +1,3 @@
+## Procedure to copy a DB instance to a different VPC
+
+Create snapshot -> prepare a DB subnet group and restore snapshot in a new VPC
